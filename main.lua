@@ -17,7 +17,7 @@ for i=3,#arg,2 do
         error("Expected a knob name starting with `-`: " .. param)
     end
     local knobName = string.sub(param, 2)
-    if not effect.knobDefs[knobName] then
+    if not effect.knobInfo[knobName] then
         error("Effect `" .. effect.name .. "` has no knob called `"
               .. knobName .. "`")
     end
