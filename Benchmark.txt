@@ -1,0 +1,26 @@
+time amp -dB -6 <test_input.f32 >/dev/null
+average of 6 trials:  real 0.540s
+
+time luajit main.lua amp -gain -6 <test_input.f32 >/dev/null
+Average of 6 trials:  real 0.509s
+
+Holy shit!!! With NO optimization or buffering,
+and loading EVERY pair of samples individually into a TABLE,
+the LuaJIT version is *faster* than the C version!
+
+WTF man. This is fucking crazy as shit.
+
+And except for small rounding differences, the output files
+are identical. Redirecting LuaJIT version to lua_out.f32 and
+C version to c_out.f32:
+
+$ pmix 'cat lua_out.f32' 'amp -vol -1 <c_out.f32' | replaygain -fB32
++64.54 dB
+0.00000006
+$ rattodb .00000006
+-144.436975
+
+So the max amplitude difference between the two is less than FS-144dB.
+For all practical purposes it's absolutely identical.
+Differences are due to the Lua version using doubles instead of
+32-bit floats, so it's potentially more accurate.
