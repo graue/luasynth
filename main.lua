@@ -6,7 +6,7 @@ if #arg < 1 then
     error("usage: luasynth unitname [-param val] ...")  
 end
 
-local effect = effects[arg[1]] && effects[arg[1]].new()
+local effect = effects[arg[1]] and effects[arg[1]].new()
 if not effect then
     error("No such effect: " .. arg[1])
 end
