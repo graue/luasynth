@@ -26,6 +26,7 @@ function M.wrapMachineDefs(defs)
                     error("Attempt to set undefined knob: " .. key)
                 end
 
+                newVal = tonumber(newVal)
                 if newVal < knobDef.min then
                     newVal = knobDef.min
                 elseif newVal > knobDef.max then
