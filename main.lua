@@ -39,7 +39,7 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, void *stream);
 
 local samplePair = ffi.new("sample_pair[?]", 1)
 local plainSamples = {}
-while ffi.C.fread(samplePair, 8, 1, io.stdin) do
+while ffi.C.fread(samplePair, 8, 1, io.stdin) > 0 do
     plainSamples[1] = samplePair[0].f[0]
     plainSamples[2] = samplePair[0].f[1]
     effect:process(plainSamples)
