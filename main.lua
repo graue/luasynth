@@ -42,5 +42,5 @@ while ffi.C.fread(samplePair, 8, 1, io.stdin) > 0 do
     effect:process(plainSamples)
     samplePair[0].f[0] = plainSamples[1]
     samplePair[0].f[1] = plainSamples[2]
-    if not ffi.C.fwrite(samplePair, 8, 1, io.stdout) then break end
+    if ffi.C.fwrite(samplePair, 8, 1, io.stdout) < 1 then break end
 end
