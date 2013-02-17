@@ -32,7 +32,13 @@ ffi.cdef[[
 typedef struct { float f[2]; } sample_pair;
 size_t fread(void *ptr, size_t size, size_t nmemb, void *stream);
 size_t fwrite(const void *ptr, size_t size, size_t nmemb, void *stream);
+int isatty(int fd);
 ]]
+
+-- Refuse to run if stdout is a terminal.
+if ffi.C.isatty(1) ~= 0 then
+    error("Stdout should not be a terminal. Try redirecting to a file")
+end
 
 local samplePair = ffi.new("sample_pair[?]", 1)
 local plainSamples = {}
