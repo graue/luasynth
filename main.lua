@@ -27,10 +27,7 @@ end
 
 -- Use LuaJIT's FFI to handle reading and writing floats.
 local ffi = require "ffi"
--- Wait, how am I gonna do this?
--- I don't think I can... does the FFI auto convert Lua filehandles
--- to FILE * and vice versa? Probably not.
--- Though, I can define a sample pair. Let's try it.
+
 ffi.cdef[[
 typedef struct { float f[2]; } sample_pair;
 size_t fread(void *ptr, size_t size, size_t nmemb, void *stream);
@@ -47,17 +44,3 @@ while ffi.C.fread(samplePair, 8, 1, io.stdin) > 0 do
     samplePair[0].f[1] = plainSamples[2]
     if not ffi.C.fwrite(samplePair, 8, 1, io.stdout) then break end
 end
-
--- It turns out reading and writing binary data (e.g. floats)
--- is annoying in Lua, requiring an add-on C library.
---
--- Basic idea here though:
--- Read N float samples from io.stdin.
--- Call effect:process(samples)
--- Write `samples` to io.stdout.
---
--- Then, if there are no bugs (lol), running this file
--- should result in a working gain effect.
---
--- To read/write floats you can use LHF's lpack library,
--- or write your own C code.

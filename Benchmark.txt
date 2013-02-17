@@ -1,18 +1,17 @@
 time amp -dB -6 <test_input.f32 >/dev/null
-average of 6 trials:  real 0.540s
+Average of 6 trials:  real 0.540s
 
 time luajit main.lua amp -gain -6 <test_input.f32 >/dev/null
 Average of 6 trials:  real 0.509s
 
-Holy shit!!! With NO optimization or buffering,
-and loading EVERY pair of samples individually into a TABLE,
-the LuaJIT version is *faster* than the C version!
-
-WTF man. This is fucking crazy as shit.
+Wow. With no optimization or buffering,
+and loading every pair of samples individually into a table
+(which seems like it'd be inefficient and dumb),
+the LuaJIT version is faster than the C version!
 
 And except for small rounding differences, the output files
-are identical. Redirecting LuaJIT version to lua_out.f32 and
-C version to c_out.f32:
+are identical. Redirecting the Lua version to lua_out.f32 and
+the C version to c_out.f32:
 
 $ pmix 'cat lua_out.f32' 'amp -vol -1 <c_out.f32' | replaygain -fB32
 +64.54 dB
