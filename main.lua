@@ -1,6 +1,6 @@
 local effects = {}
 
-effects.amp = require "amp"
+effects.amp = require "effects.amp"
 
 if #arg < 1 then
     error("usage: luasynth unitname [-param val] ...")  
