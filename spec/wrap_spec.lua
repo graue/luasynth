@@ -2,7 +2,7 @@ local wrap     = require "wrap"
 local wrapDefs = wrap.wrapMachineDefs
 
 describe("Unit definition wrapper", function()
-    it("should require a processing function", function()
+    it("should error if no processing function is provided", function()
         local noProcessingUnit = {
             name = 'Bad Unit',
             knobs = {}
