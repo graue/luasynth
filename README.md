@@ -19,3 +19,11 @@ Unfortunately, vanilla Lua doesn't provide a way to do
 binary IO, so LuaJIT is required for the driver (main.lua).
 However, the effects themselves, such as amp.lua, will work
 (albeit slower) in plain Lua.
+
+
+## Tests
+
+Luasynth uses [Busted](http://olivinelabs.com/busted/) for testing.
+To run tests:
+
+    busted spec
