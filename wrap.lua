@@ -14,12 +14,22 @@ function M.wrapMachineDefs(defs)
         }
     end
 
+    -- The following function creates a new instance of this machine.
+    -- It's called via the prototype's .new() method.
+    -- Note that it encloses defs and publicKnobInfo from above.
     local function newUnit()
         local state = {public = {knobInfo = publicKnobInfo}}
 
         local proxy = {}
         local meta = {
+            -- When values in the proxy table are looked up
+            -- (either "knobInfo" or a knob's name),
+            -- pull them from the unit's public state.
             __index = state.public,
+
+            -- When values in the proxy table are assigned,
+            -- check for a valid key, clamp to between min/max,
+            -- and call the on-change callback.
             __newindex = function(proxy, key, newVal)
                 local knobDef = defs.knobs[key]
                 if not knobDef then
@@ -42,6 +52,9 @@ function M.wrapMachineDefs(defs)
         }
         setmetatable(proxy, meta)
 
+        -- Wrap the unit's processOneSample() function
+        -- (defined internally by each unit)
+        -- in a function that processes an array of samples.
         state.public.process = function(self, samples)
             local i = 1
             while samples[i] do
