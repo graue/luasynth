@@ -2,6 +2,35 @@
 
 local M = {}
 
+
+-- Create a processing function for a mono effect,
+-- based on the unit's internally defined processOneSample().
+local function wrapMonoEffect(monoFunc, state)
+    return function(samples)
+        local i = 1
+        while samples[i] do
+            samples[i] = monoFunc(state, samples[i])
+            i = i+1
+        end
+    end
+end
+
+
+-- Create a processing function for a stereo effect
+-- based on processSamplePair().
+local function wrapStereoEffect(stereoFunc, state)
+    return function(samples)
+        local i = 1
+        while samples[i+1] do
+            samples[i], samples[i+1] = stereoFunc(state, samples[i],
+                                                  samples[i+1])
+            i = i+2
+        end
+        if samples[i] then error "Odd number of samples given" end
+    end
+end
+
+
 function M.wrapMachineDefs(defs)
     -- Copy the knob definitions but without callbacks.
     local publicKnobInfo = {}
@@ -52,16 +81,17 @@ function M.wrapMachineDefs(defs)
         }
         setmetatable(proxy, meta)
 
-        -- Wrap the unit's processOneSample() function
-        -- (defined internally by each unit)
-        -- in a function that processes an array of samples.
-        state.public.process = function(self, samples)
-            local i = 1
-            while samples[i] do
-                samples[i] = defs.processOneSample(state, samples[i])
-                i = i+1
-            end
+        -- Process a whole array of samples by wrapping the unit's
+        -- internally defined processing function.
+        local wrapFunc = nil
+        if defs.processOneSample then
+            wrapFunc = wrapMonoEffect(defs.processOneSample, state)
+        elseif defs.processSamplePair then
+            wrapFunc = wrapStereoEffect(defs.processSamplePair, state)
+        else
+            error("Unit `" .. foobar .. "` has no processing function")
         end
+        state.public.process = wrapFunc
 
         -- Initialize all knobs, making sure their onChange methods
         -- get called to initialize internal state as well.
@@ -76,7 +106,7 @@ function M.wrapMachineDefs(defs)
         state.public.name = defs.name
 
         -- Return the proxy object.
-        -- The public interface is to use .knobInfo, :process, .name,
+        -- The public interface is to use .knobInfo, .process, .name,
         -- and setting and getting [key] for keys in .knobInfo.
         return proxy
     end
