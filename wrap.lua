@@ -3,30 +3,37 @@
 local M = {}
 
 
--- Create a processing function for a mono effect,
--- based on the unit's internally defined processOneSample().
-local function wrapMonoEffect(monoFunc, state)
-    return function(samples)
-        local i = 1
-        while samples[i] do
-            samples[i] = monoFunc(state, samples[i])
-            i = i+1
+-- Wrappers for mono and stereo effects.
+-- We wrap each processing function twice:
+--   1. to process a whole array instead of a single sample / sample pair,
+--   2. to encapsulate private state.
+
+-- For stateless functions that process one sample at a time,
+-- and for which stereo is irrelevant.
+local function wrapMonoEffect(monoFunc)
+    return function(state)
+        return function(samples)
+            local i = 1
+            while samples[i] do
+                samples[i] = monoFunc(state, samples[i])
+                i = i+1
+            end
         end
     end
 end
 
-
--- Create a processing function for a stereo effect
--- based on processSamplePair().
-local function wrapStereoEffect(stereoFunc, state)
-    return function(samples)
-        local i = 1
-        while samples[i+1] do
-            samples[i], samples[i+1] = stereoFunc(state, samples[i],
-                                                  samples[i+1])
-            i = i+2
+-- For stateful or stereo-aware functions.
+local function wrapStereoEffect(stereoFunc)
+    return function(state)
+        return function(samples)
+            local i = 1
+            while samples[i+1] do
+                samples[i], samples[i+1] = stereoFunc(state, samples[i],
+                                                    samples[i+1])
+                i = i+2
+            end
+            if samples[i] then error "Odd number of samples given" end
         end
-        if samples[i] then error "Odd number of samples given" end
     end
 end
 
@@ -41,6 +48,16 @@ function M.wrapMachineDefs(defs)
             default = defs.knobs[k].default,
             label = defs.knobs[k].label
         }
+    end
+
+    -- Wrap the processing function to operate on a whole array.
+    local wrapProcFunc = nil
+    if defs.processOneSample then
+        wrapProcFunc = wrapMonoEffect(defs.processOneSample)
+    elseif defs.processSamplePair then
+        wrapProcFunc = wrapStereoEffect(defs.processSamplePair)
+    else
+        error("Unit `" .. defs.name .. "` has no processing function")
     end
 
     -- The following function creates a new instance of this machine.
@@ -81,17 +98,9 @@ function M.wrapMachineDefs(defs)
         }
         setmetatable(proxy, meta)
 
-        -- Process a whole array of samples by wrapping the unit's
-        -- internally defined processing function.
-        local wrapFunc = nil
-        if defs.processOneSample then
-            wrapFunc = wrapMonoEffect(defs.processOneSample, state)
-        elseif defs.processSamplePair then
-            wrapFunc = wrapStereoEffect(defs.processSamplePair, state)
-        else
-            error("Unit `" .. foobar .. "` has no processing function")
-        end
-        state.public.process = wrapFunc
+        -- Expose the wrapped sample-processing function
+        -- (enclosing private state).
+        state.public.process = wrapProcFunc(state)
 
         -- Initialize all knobs, making sure their onChange methods
         -- get called to initialize internal state as well.
