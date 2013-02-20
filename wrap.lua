@@ -82,11 +82,28 @@ function M.wrapMachineDefs(defs)
                     error("Attempt to set undefined knob: " .. key)
                 end
 
-                newVal = tonumber(newVal)
-                if newVal < knobDef.min then
-                    newVal = knobDef.min
-                elseif newVal > knobDef.max then
-                    newVal = knobDef.max
+                if knobDef.options then
+                    -- Multiple choice knob (set of strings).
+                    newVal = tostring(newVal)
+                    local found = false
+                    for _,v in ipairs(knobDef.options) do
+                        if v == newVal then
+                            found = true
+                            break
+                        end
+                    end
+                    if not found then
+                        error("Knob `" .. key .. "` has no option `"
+                              .. newVal .. "`")
+                    end
+                else
+                    -- Numeric knob.
+                    newVal = tonumber(newVal)
+                    if newVal < knobDef.min then
+                        newVal = knobDef.min
+                    elseif newVal > knobDef.max then
+                        newVal = knobDef.max
+                    end
                 end
 
                 state.public[key] = newVal
