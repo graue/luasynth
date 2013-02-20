@@ -16,28 +16,28 @@ local function updateCoefs(state)
     local sin_w0 = math.sin(w0)
     local alpha = sin_w0/(2*Q)
 
-    if state.public.filttype == 'Lowpass' then
+    if state.public.filtType == 'Lowpass' then
         state.b0 =  (1 - cos_w0)/2
         state.b1 =   1 - cos_w0
         state.b2 =  (1 - cos_w0)/2
         state.a0 =   1 + alpha
         state.a1 =  -2*cos_w0
         state.a2 =   1 - alpha
-    elseif state.public.filttype == 'Highpass' then
+    elseif state.public.filtType == 'Highpass' then
         state.b0 =  (1 + cos_w0)/2
         state.b1 = -(1 + cos_w0)
         state.b2 =  (1 + cos_w0)/2
         state.a0 =   1 + alpha
         state.a1 =  -2*cos_w0
         state.a2 =   1 - alpha
-    elseif state.public.filttype == 'Bandpass' then
+    elseif state.public.filtType == 'Bandpass' then
         state.b0 =   sin_w0/2
         state.b1 =   0
         state.b2 =  -sin_w0/2
         state.a0 =   1 + alpha
         state.a1 =  -2*cos_w0
         state.a2 =   1 - alpha
-    elseif state.public.filttype == 'Notch' then
+    elseif state.public.filtType == 'Notch' then
         state.b0 =   1
         state.b1 =  -2*cos_w0
         state.b2 =   1
@@ -52,7 +52,7 @@ local defs = { name = 'Filter' }
 
 defs.knobs = {}
 
-defs.knobs.filttype = {
+defs.knobs.filtType = {
     label    = 'Filter type',
     options  = {'Lowpass', 'Highpass', 'Bandpass', 'Notch'},
       -- XXX: 'options' is not yet supported, needs implementing
