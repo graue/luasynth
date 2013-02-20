@@ -10,6 +10,8 @@ local HistArray = require "histArray"
 -- x[n-3] and y[n-3] and below will be purged (accessing them is an error)
 -- so that the no longer needed values do not waste any memory.
 --
+-- HistArray stands for history array.
+--
 -- FAQ:    How does a HistArray know when to purge old values?
 -- Answer: For all n, when y[n] is assigned to, y[n - (y.histSize+1)]
 --         and below are purged.  This allows most recurrence relations
