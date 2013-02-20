@@ -21,7 +21,7 @@ describe("Unit definition wrapper", function()
         local samples  = {0,-0.5,-1,-5, 0.5, 1}
         local expected = {0, 0.5, 1, 5,-0.5,-1}
         inverterUnit.process(samples)
-        assert.are.same(samples, expected)
+        assert.are.same(expected, samples)
     end)
 
     it("should correctly wrap a stereo effect", function()
@@ -34,7 +34,7 @@ describe("Unit definition wrapper", function()
         local samples  = {0, 1,   0.25, 0.5,   -1,  0}
         local expected = {1, 0,   0.5,  0.25,   0, -1}
         swapperUnit.process(samples)
-        assert.are.same(samples, expected)
+        assert.are.same(expected, samples)
     end)
 
     pending("test knob value clamping (max/min)", function() end)
