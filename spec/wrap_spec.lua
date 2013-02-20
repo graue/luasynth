@@ -1,7 +1,7 @@
 local wrap     = require "wrap"
 local wrapDefs = wrap.wrapMachineDefs
 
-describe("Unit definition wrapper", function()
+describe("Processing function wrapper", function()
     it("should error if no processing function is provided", function()
         local noProcessingUnit = {
             name = 'Bad Unit',
@@ -36,7 +36,82 @@ describe("Unit definition wrapper", function()
         swapperUnit.process(samples)
         assert.are.same(expected, samples)
     end)
+end)
 
-    pending("test knob value clamping (max/min)", function() end)
-    pending("test onChange callbacks", function() end)
+
+describe("Knob interface wrapper", function()
+    local gainChange    = spy.new(function(newVal) end)
+    local oscTypeChange = spy.new(function(newVal) end)
+    local knobberDefs = {
+        name = 'Knobber Test',
+        knobs = {
+            gain = {
+                min      = -90.0,
+                max      =  40.0,
+                default  =   3.0,
+                label    = 'Fake gain',
+                onChange = function(state, newVal) gainChange(newVal) end
+            },
+
+            oscType = {
+                options  = {'Square', 'Tri', 'Sine'},
+                default  =  'Sine',
+                label    =  'Fake oscillator type',
+                onChange = function(state, newVal) oscTypeChange(newVal) end
+            }
+        },
+        processSamplePair = function(state, l, r) return l, r end
+    }
+    local knobberProto = wrapDefs(knobberDefs)
+
+    it("should set default values for numeric and option knobs", function()
+        local unit = knobberProto.new()
+        assert.are.equal(3.0, unit.gain)
+        assert.are.equal('Sine', unit.oscType)
+    end)
+
+    it("should update numeric knobs when set", function()
+        local unit = knobberProto.new()
+        unit.gain = -6.0
+        assert.are.equal(-6.0, unit.gain)
+    end)
+
+    it("should call callbacks when numeric knobs are set", function()
+        local unit = knobberProto.new()
+        unit.gain = -6.0
+        assert.spy(gainChange).was.called_with(-6.0)
+    end)
+
+    it("should clamp numeric knobs to within min/max", function()
+        local unit = knobberProto.new()
+
+        local tooLow = knobberDefs.knobs.gain.min - 10.0
+        unit.gain = tooLow
+        assert.are.equal(knobberDefs.knobs.gain.min, unit.gain)
+        assert.spy(gainChange).was.called_with(knobberDefs.knobs.gain.min)
+
+        local tooHigh = knobberDefs.knobs.gain.max + 0.01
+        unit.gain = tooHigh
+        assert.are.equal(knobberDefs.knobs.gain.max, unit.gain)
+        assert.spy(gainChange).was.called_with(knobberDefs.knobs.gain.max)
+    end)
+
+    it("should update option knobs when set", function()
+        local unit = knobberProto.new()
+        unit.oscType = 'Tri'
+        assert.are.equal('Tri', unit.oscType)
+    end)
+    it("should call callbacks when option knobs are set", function()
+        local unit = knobberProto.new()
+        unit.oscType = 'Tri'
+        assert.spy(oscTypeChange).was.called_with('Tri')
+    end)
+
+    it("should reject option knob settings not in the list", function()
+        local unit = knobberProto.new()
+        assert.has_error(function() unit.oscType = 'Pentagon' end,
+                         "Knob `oscType` has no option `Pentagon`")
+        assert.are_not.equal('Pentagon', unit.oscType)
+        assert.spy(oscTypeChange).was_not.called_with('Pentagon')
+    end)
 end)
