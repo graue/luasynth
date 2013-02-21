@@ -82,11 +82,11 @@ describe("a history array", function()
         assert.has_error(function()
             local y = HistArray.new(2)
             y[0] = 1
-        end)
+        end, "Attempt to assign nonpositive index")
         assert.has_error(function()
             local y = HistArray.new(2)
             y[-50000] = 1
-        end)
+        end, "Attempt to assign nonpositive index")
     end)
 
     it("can handle really freakin' huge indices", function()
