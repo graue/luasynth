@@ -17,8 +17,11 @@ defs.knobs.angle = {
         local angleRad = math.rad(newVal)
 
         -- Implement trig formula for equal-power panning.
-        state.leftAmp  = math.cos(angleRad) + math.sin(angleRad)
-        state.rightAmp = math.cos(angleRad) - math.sin(angleRad)
+        -- 0 degrees is center, -45 full left, 45 full right.
+        -- XXX: 90 or -90 should be inverse phase but I don't think
+        -- this code does that.
+        state.leftAmp  = math.cos(angleRad) - math.sin(angleRad)
+        state.rightAmp = math.cos(angleRad) + math.sin(angleRad)
     end
 }
 
