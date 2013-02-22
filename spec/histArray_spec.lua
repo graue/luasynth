@@ -94,7 +94,11 @@ describe("a history array", function()
         y[15000] = 10
         assert.are.same({[15000] = 10, [14999] = 0, [14998] = 0}, y:all())
 
-        local big = 12345678901234567890
+        -- NOTE: Lua uses doubles (64-bit) internally.
+        -- They can unambiguously represent integers up to 2^52
+        -- (about 4.5e+15). It's important to use an integer smaller than
+        -- that for this test.
+        local big = 123456789012345
         y[big] = -100
         big = big + 1
         y[big] = 1
