@@ -37,8 +37,8 @@ describe("a history array", function()
 
     it("starts with histSize+1 zeroes", function()
         local y = HistArray.new(5)
-        assert.are.equal(0, y[0], y[-1], y[-2], y[-3], y[-4])
-        assert.has_error(function() local _ = y[-5] end)
+        assert.are.equal(0, y[0], y[-1], y[-2], y[-3], y[-4], y[-5])
+        assert.has_error(function() local _ = y[-6] end)
     end)
 
     it("returns its values as a table with the :all method", function()
