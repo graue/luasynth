@@ -4,9 +4,33 @@
 -- Audio EQ Cookbook.
 
 local wrap = require "wrap"
+local HistArray = require "histArray"
+
+
+local function initIfNeeded(state)
+    -- Create buffers (history arrays) if not already extant.
+    -- XXX This is called from updateCoefs(), but should be in a separate
+    -- init function once the framework supports that.
+    if not state.xLeft then
+        state.xLeft  = HistArray.new(2)
+        state.yLeft  = HistArray.new(2)
+        state.xRight = HistArray.new(2)
+        state.yRight = HistArray.new(2)
+        state.n      = 0
+    end
+end
+
 
 
 local function updateCoefs(state)
+    -- Abort if all knobs are not set yet.
+    -- XXX: Hack needed because of the framework's lack of a proper init
+    -- callback.
+    if not (state.public.q and state.public.center and state.public.filtType)
+    then
+        return
+    end
+
     local Fs = 44100  -- XXX: need interface to set/get a custom sample rate
     local f0 = state.public.center  -- Cutoff or center frequency
     local Q  = state.public.q
@@ -16,35 +40,53 @@ local function updateCoefs(state)
     local sin_w0 = math.sin(w0)
     local alpha = sin_w0/(2*Q)
 
+    local b0, b1, b2, a0, a1, a2
+
     if state.public.filtType == 'Lowpass' then
-        state.b0 =  (1 - cos_w0)/2
-        state.b1 =   1 - cos_w0
-        state.b2 =  (1 - cos_w0)/2
-        state.a0 =   1 + alpha
-        state.a1 =  -2*cos_w0
-        state.a2 =   1 - alpha
+        b0 =  (1 - cos_w0)/2
+        b1 =   1 - cos_w0
+        b2 =  (1 - cos_w0)/2
+        a0 =   1 + alpha
+        a1 =  -2*cos_w0
+        a2 =   1 - alpha
     elseif state.public.filtType == 'Highpass' then
-        state.b0 =  (1 + cos_w0)/2
-        state.b1 = -(1 + cos_w0)
-        state.b2 =  (1 + cos_w0)/2
-        state.a0 =   1 + alpha
-        state.a1 =  -2*cos_w0
-        state.a2 =   1 - alpha
+        b0 =  (1 + cos_w0)/2
+        b1 = -(1 + cos_w0)
+        b2 =  (1 + cos_w0)/2
+        a0 =   1 + alpha
+        a1 =  -2*cos_w0
+        a2 =   1 - alpha
     elseif state.public.filtType == 'Bandpass' then
-        state.b0 =   sin_w0/2
-        state.b1 =   0
-        state.b2 =  -sin_w0/2
-        state.a0 =   1 + alpha
-        state.a1 =  -2*cos_w0
-        state.a2 =   1 - alpha
+        b0 =   sin_w0/2
+        b1 =   0
+        b2 =  -sin_w0/2
+        a0 =   1 + alpha
+        a1 =  -2*cos_w0
+        a2 =   1 - alpha
     elseif state.public.filtType == 'Notch' then
-        state.b0 =   1
-        state.b1 =  -2*cos_w0
-        state.b2 =   1
-        state.a0 =   1 + alpha
-        state.a1 =  -2*cos_w0
-        state.a2 =   1 - alpha
+        b0 =   1
+        b1 =  -2*cos_w0
+        b2 =   1
+        a0 =   1 + alpha
+        a1 =  -2*cos_w0
+        a2 =   1 - alpha
     end
+
+    -- The formula recommended by RBJ's cookbook is:
+    --
+    -- y[n] = (b0/a0)*x[n] + (b1/a0)*x[n-1] + (b2/a0)*x[n-2]
+    --                     - (a1/a0)*y[n-1] - (a2/a0)*y[n-2]
+    --
+    -- By saving each of the quotients as constants we can gain
+    -- a little efficiency and simplicity:
+    --
+    state.c1 = b0/a0
+    state.c2 = b1/a0
+    state.c3 = b2/a0
+    state.c4 = a1/a0
+    state.c5 = a2/a0
+
+    initIfNeeded(state)
 end
 
 
@@ -55,7 +97,7 @@ defs.knobs = {}
 defs.knobs.filtType = {
     label    = 'Filter type',
     options  = {'Lowpass', 'Highpass', 'Bandpass', 'Notch'},
-      -- XXX: 'options' is not yet supported, needs implementing
+    default  = 'Lowpass',
     onChange = function(state, newVal) updateCoefs(state) end
 }
 
@@ -75,8 +117,23 @@ defs.knobs.q = {
     onChange = function(state, newVal) updateCoefs(state) end
 }
 
+
+local function processSample(s, n, x, y, c1, c2, c3, c4, c5)
+    y[n] = c1*x[n] + c2*x[n-1] + c3*x[n-2]
+                   - c4*y[n-1] - c5*y[n-2]
+    return y[n]
+end
+
+
 function defs.processSamplePair(state, l, r)
-    -- TODO
+    local n = state.n + 1
+    state.xLeft[n], state.xRight[n] = l, r
+    outL = processSample(l, n, state.xLeft,  state.yLeft,  state.c1,
+                         state.c2, state.c3, state.c4, state.c5)
+    outR = processSample(r, n, state.xRight, state.yRight, state.c1,
+                         state.c2, state.c3, state.c4, state.c5)
+    state.n = n
+    return outL, outR
 end
 
 
