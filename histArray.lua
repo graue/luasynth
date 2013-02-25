@@ -1,4 +1,7 @@
--- XXX: not fully implemented yet. See the tests in spec/
+-- HistArray: an array that automatically forgets its history,
+-- except for a fixed number of old values.
+--
+-- See spec/histArray_spec.lua for tests documenting how it works.
 
 local M = {}
 
@@ -34,8 +37,6 @@ local function lookupKeyIn(proxy, private, key)
         return private.histSize
     elseif key == 'all' then
         return private.all
-    elseif key == '_debug' then
-        return private  -- XXX
     else
         error("attempt to access undefined HistArray key " .. tostring(key))
     end
