@@ -3,6 +3,7 @@ local effects = {}
 effects.amp = require "effects.amp"
 effects.pan = require "effects.pan"
 effects.filter = require "effects.filter"
+effects.softsat = require "effects.softsat"
 
 if #arg < 1 then
     error("usage: luasynth unitname [-param val] ...")  
