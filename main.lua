@@ -2,6 +2,7 @@ local effects = {}
 
 effects.amp = require "effects.amp"
 effects.pan = require "effects.pan"
+effects.delay = require "effects.delay"
 effects.filter = require "effects.filter"
 effects.softsat = require "effects.softsat"
 
