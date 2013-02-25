@@ -1,6 +1,6 @@
 -- amp effect
 
-local wrap = require "wrap"
+local wrap = require "util.wrap"
 
 
 -- Convert from dB to voltage ratio,

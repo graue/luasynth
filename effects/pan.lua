@@ -1,6 +1,6 @@
 -- pan effect: horizontally pan a waveform
 
-local wrap = require "wrap"
+local wrap = require "util.wrap"
 
 
 local defs = { name = 'Pan' }

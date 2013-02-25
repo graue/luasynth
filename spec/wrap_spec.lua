@@ -1,4 +1,4 @@
-local wrap     = require "wrap"
+local wrap     = require "util.wrap"
 local wrapDefs = wrap.wrapMachineDefs
 
 describe("Processing function wrapper", function()

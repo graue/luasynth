@@ -1,4 +1,4 @@
-local HistArray = require "histArray"
+local HistArray = require "util.histArray"
 
 -- The HistArray module provides an array that automatically purges
 -- old values. It lets you write code like:

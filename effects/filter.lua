@@ -3,8 +3,8 @@
 -- Implemented with formulas from Robert Bristow-Johnson's
 -- Audio EQ Cookbook.
 
-local wrap = require "wrap"
-local HistArray = require "histArray"
+local wrap      = require "util.wrap"
+local HistArray = require "util.histArray"
 
 
 local function initIfNeeded(state)

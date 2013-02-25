@@ -11,7 +11,7 @@
 -- onto (-1, 1) in a way that sounds much more pleasing to the ear
 -- than hard clipping.
 
-local wrap = require "wrap"
+local wrap = require "util.wrap"
 
 
 local defs = {name = 'SoftSat'}
