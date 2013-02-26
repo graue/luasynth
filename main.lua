@@ -6,6 +6,7 @@ effects.delay = require "effects.delay"
 effects.power = require "effects.power"
 effects.filter = require "effects.filter"
 effects.softsat = require "effects.softsat"
+effects.stwidth = require "effects.stwidth"
 
 if #arg < 1 then
     error("usage: luasynth unitname [-param val] ...")  
