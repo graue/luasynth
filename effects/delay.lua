@@ -3,9 +3,6 @@
 local wrap      = require "util.wrap"
 local HistArray = require "util.histArray"
 
-
-
-
 -- Convert a millisecond measurement to a whole number of samples.
 local function msToSamples(ms)
     local sampleRate = 44100  -- XXX not changeable yet
@@ -18,9 +15,7 @@ local function msToSamples(ms)
 end
 
 
-defs = {name = 'Delay'}
-
-defs.knobs = {}
+defs = {name = 'Delay', knobs = {}}
 
 defs.knobs.len = {
     min     =     0.11,

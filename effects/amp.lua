@@ -2,18 +2,13 @@
 
 local wrap = require "util.wrap"
 
-
 -- Convert from dB to voltage ratio,
 -- e.g. dbToRatio(6) is about 2, dbToRatio(-3) is about 0.7
 local function dbToRatio(db)
     return 10 ^ (db/20)
 end
 
-
-local defs = {name = 'Amp'}
-
--- Define the user-controllable parameters for the amp effect.
-defs.knobs = {}
+local defs = {name = 'Amp', knobs = {}}
 
 defs.knobs.gain = {
     min      = -120.0,
@@ -28,10 +23,8 @@ defs.knobs.gain = {
     end
 }
 
-
 function defs.processOneSample(state, sample)
     return sample * state.linearGain
 end
-
 
 return wrap.wrapMachineDefs(defs)

@@ -2,10 +2,7 @@
 
 local wrap = require "util.wrap"
 
-
-local defs = {name = 'Power'}
-
-defs.knobs = {}
+local defs = {name = 'Power', knobs = {}}
 
 defs.knobs.exponent = {
     min     = 0.0001,
@@ -14,7 +11,6 @@ defs.knobs.exponent = {
     label   = 'Exponent'
 }
 
-
 function defs.processOneSample(state, sample)
     if sample < 0.0 then
         return -math.pow(-sample, state.public.exponent)
@@ -22,6 +18,5 @@ function defs.processOneSample(state, sample)
         return  math.pow( sample, state.public.exponent)
     end
 end
-
 
 return wrap.wrapMachineDefs(defs)

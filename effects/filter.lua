@@ -21,7 +21,6 @@ local function initIfNeeded(state)
 end
 
 
-
 local function updateCoefs(state)
     -- Abort if all knobs are not set yet.
     -- XXX: Hack needed because of the framework's lack of a proper init
@@ -90,9 +89,7 @@ local function updateCoefs(state)
 end
 
 
-local defs = { name = 'Filter' }
-
-defs.knobs = {}
+local defs = {name = 'Filter', knobs = {}}
 
 defs.knobs.filtType = {
     label    = 'Filter type',

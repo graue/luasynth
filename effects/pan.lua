@@ -2,10 +2,7 @@
 
 local wrap = require "util.wrap"
 
-
-local defs = { name = 'Pan' }
-
-defs.knobs = {}
+local defs = {name = 'Pan', knobs = {}}
 
 defs.knobs.angle = {
     min     = -180.0,
@@ -31,6 +28,5 @@ defs.knobs.angle = {
 defs.processSamplePair = function(state, left, right)
     return left * state.leftAmp, right * state.rightAmp
 end
-
 
 return wrap.wrapMachineDefs(defs)

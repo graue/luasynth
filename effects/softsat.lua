@@ -13,10 +13,7 @@
 
 local wrap = require "util.wrap"
 
-
-local defs = {name = 'SoftSat'}
-
-defs.knobs = {}
+local defs = {name = 'SoftSat', knobs = {}}
 
 defs.knobs.range = {
     min     = 0.01,
