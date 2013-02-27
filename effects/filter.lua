@@ -22,14 +22,6 @@ end
 
 
 local function updateCoefs(state)
-    -- Abort if all knobs are not set yet.
-    -- XXX: Hack needed because of the framework's lack of a proper init
-    -- callback.
-    if not (state.public.q and state.public.center and state.public.filtType)
-    then
-        return
-    end
-
     local Fs = 44100  -- XXX: need interface to set/get a custom sample rate
     local f0 = state.public.center  -- Cutoff or center frequency
     local Q  = state.public.q

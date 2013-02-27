@@ -22,7 +22,6 @@ defs.knobs.range = {
     label   = 'Range',
 
     onChange = function(state, newRange)
-        if not state.public.hardness then return end  -- XXX need proper init
         state.normalizedRange = newRange * 2 / (state.public.hardness + 1)
     end
 }
@@ -34,7 +33,6 @@ defs.knobs.hardness = {
     label   = 'Hardness',
 
     onChange = function(state, newHardness)
-        if not state.public.range then return end  -- XXX
         state.normalizedRange = state.public.range * 2 / (newHardness + 1)
     end
 }
