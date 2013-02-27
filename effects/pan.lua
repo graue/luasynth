@@ -8,9 +8,9 @@ local defs = { name = 'Pan' }
 defs.knobs = {}
 
 defs.knobs.angle = {
-    min     = -90.0,
-    max     =  90.0,
-    default =   0.0,
+    min     = -180.0,
+    max     =  180.0,
+    default =    0.0,
     label   = 'Angle (degrees)',
 
     onChange = function(state, newVal)
@@ -18,10 +18,13 @@ defs.knobs.angle = {
 
         -- Implement trig formula for equal-power panning.
         -- 0 degrees is center, -45 full left, 45 full right.
-        -- XXX: 90 or -90 should be inverse phase but I don't think
-        -- this code does that.
         state.leftAmp  = math.cos(angleRad) - math.sin(angleRad)
         state.rightAmp = math.cos(angleRad) + math.sin(angleRad)
+
+        -- Fun fact: 90 degrees inverts the left channel, -90
+        -- inverts the right, and 180 or -180 inverts both channels
+        -- (which is occasionally useful, and the only reason this
+        -- machine supports values outside of [-90, 90]).
     end
 }
 
