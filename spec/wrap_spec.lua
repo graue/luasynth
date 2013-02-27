@@ -42,6 +42,8 @@ end)
 describe("Knob interface wrapper", function()
     local gainChange    = spy.new(function(newVal) end)
     local oscTypeChange = spy.new(function(newVal) end)
+    local checkBothG    = spy.new(function(gain, oscType) end)
+    local checkBothOT   = spy.new(function(gain, oscType) end)
     local knobberDefs = {
         name = 'Knobber Test',
         knobs = {
@@ -50,14 +52,20 @@ describe("Knob interface wrapper", function()
                 max      =  40.0,
                 default  =   3.0,
                 label    = 'Fake gain',
-                onChange = function(state, newVal) gainChange(newVal) end
+                onChange = function(state, newVal)
+                    gainChange(newVal)
+                    checkBothG(state.public.gain, state.public.oscType)
+                end
             },
 
             oscType = {
                 options  = {'Square', 'Tri', 'Sine'},
                 default  =  'Sine',
                 label    =  'Fake oscillator type',
-                onChange = function(state, newVal) oscTypeChange(newVal) end
+                onChange = function(state, newVal)
+                    oscTypeChange(newVal)
+                    checkBothOT(state.public.gain, state.public.oscType)
+                end
             }
         },
         processSamplePair = function(state, l, r) return l, r end
@@ -70,6 +78,18 @@ describe("Knob interface wrapper", function()
         assert.are.equal('Sine', unit.oscType)
     end)
 
+    it("should call callbacks on init", function()
+        local unit = knobberProto.new()
+        assert.spy(gainChange).was.called_with(3.0)
+        assert.spy(oscTypeChange).was.called_with('Sine')
+    end)
+
+    it("should set all defaults before calling callbacks", function()
+        local unit = knobberProto.new()
+        assert.spy(checkBothG ).was.called_with(3.0, 'Sine')
+        assert.spy(checkBothOT).was.called_with(3.0, 'Sine')
+    end)
+
     it("should update numeric knobs when set", function()
         local unit = knobberProto.new()
         unit.gain = -6.0
@@ -80,6 +100,12 @@ describe("Knob interface wrapper", function()
         local unit = knobberProto.new()
         unit.gain = -6.0
         assert.spy(gainChange).was.called_with(-6.0)
+    end)
+
+    it("sets the new value before calling a callback", function()
+        local unit = knobberProto.new()
+        unit.gain = -6.0
+        assert.spy(checkBothG).was.called_with(-6.0, 'Sine')
     end)
 
     it("should clamp numeric knobs to within min/max", function()

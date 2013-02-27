@@ -108,6 +108,9 @@ function M.wrapMachineDefs(defs)
 
                 state.public[key] = newVal
 
+                -- TODO: Is it worthwhile not calling onChange if the new
+                -- value is the same as the old? Does this ever result in a
+                -- worthwhile performance gain? Complications?
                 if knobDef.onChange then
                     knobDef.onChange(state, newVal)
                 end
@@ -119,13 +122,21 @@ function M.wrapMachineDefs(defs)
         -- (enclosing private state).
         state.public.process = wrapProcFunc(state)
 
-        -- Initialize all knobs, making sure their onChange methods
-        -- get called to initialize internal state as well.
-        -- XXX: This is probably stupid. What if Knob A's onChange method
-        -- expects the internal state corresponding to Knob B to already
-        -- be set?
+        -- Initialize all knobs, first stealthily (no onChange callbacks).
         for k,v in pairs(proxy.knobInfo) do
-            proxy[k] = v.default
+            if v.min and (v.default < v.min or v.default > v.max) then
+                error("Default for knob " .. k .. " is out of range")
+            end
+            state.public[k] = v.default  -- Direct, doesn't call callback
+        end
+
+        -- Now call each onChange method.
+        -- This way, if the onChange method uses the state of a second knob,
+        -- that second knob is guaranteed to be set already.
+        for k,v in pairs(proxy.knobInfo) do
+            if defs.knobs[k].onChange then
+                defs.knobs[k].onChange(state, state.public[k])
+            end
         end
 
         -- For convenience, save the name with the new object.
