@@ -12,22 +12,34 @@ if #arg < 1 then
     error("usage: luasynth unitname [-param val] ...")  
 end
 
-local effect = effects[arg[1]] and effects[arg[1]].new()
-if not effect then
-    error("No such effect: " .. arg[1])
+local isEffect = true
+local unit = effects[arg[1]] and effects[arg[1]].new()
+if not unit then
+    unit = gens[arg[1]] and gens[arg[1]].new()
+    if not unit then
+        error("No such unit: " .. arg[1])
+    end
+    isEffect = false
 end
+
+local lengthLimitSecs = -1
 
 for i=3,#arg,2 do
     local param = arg[i-1]
     if string.sub(param, 1, 1) ~= "-" then
         error("Expected a knob name starting with `-`: " .. param)
     end
+
     local knobName = string.sub(param, 2)
-    if not effect.knobInfo[knobName] then
-        error("Effect `" .. effect.name .. "` has no knob called `"
+
+    if knobName == "length" then
+        lengthLimitSecs = tonumber(arg[i])
+    elseif unit.knobInfo[knobName] then
+        unit[knobName] = arg[i]
+    else
+        error("Unit `" .. unit.name .. "` has no knob called `"
               .. knobName .. "`")
     end
-    effect[knobName] = arg[i]
 end
 
 
@@ -48,11 +60,21 @@ end
 
 local samplePair = ffi.new("sample_pair[?]", 1)
 local plainSamples = {}
-while ffi.C.fread(samplePair, 8, 1, io.stdin) > 0 do
-    plainSamples[1] = samplePair[0].f[0]
-    plainSamples[2] = samplePair[0].f[1]
-    effect.process(plainSamples)
+local rate = 44100  -- XXX
+local pairsLeft = math.floor(lengthLimitSecs * rate)
+
+while pairsLeft ~= 0 do
+    if isEffect then
+        if ffi.C.fread(samplePair, 8, 1, io.stdin) <= 0 then break end
+        plainSamples[1] = samplePair[0].f[0]
+        plainSamples[2] = samplePair[0].f[1]
+        unit.process(plainSamples)
+    else
+        plainSamples = unit.generate(1)
+    end
     samplePair[0].f[0] = plainSamples[1]
     samplePair[0].f[1] = plainSamples[2]
     if ffi.C.fwrite(samplePair, 8, 1, io.stdout) < 1 then break end
+
+    pairsLeft = pairsLeft - 1
 end
