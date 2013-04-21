@@ -1,0 +1,4 @@
+#!/usr/bin/env luajit
+require("main")
+
+-- XXX this only works if run from the main project directory
