@@ -1,9 +1,51 @@
 local gens, effects = require("units").gens, require("units").effects
 
-
-if #arg < 1 then
-    error("usage: luasynth unitname [-param val] ...")  
+local function showHelpFor(unit, name)
+    local unitType = "a generator"
+    if unit.new().process then unitType = "an effect" end
+    io.stderr:write(name .. " is " .. unitType .. "\n\n")
+    for k,v in pairs(unit.knobInfo) do
+        io.stderr:write("-" .. k .. ": " .. v.label .. "\n")
+        if v.options then
+            io.stderr:write("    Options: ")
+            for k_,v_ in pairs(v.options) do
+                io.stderr:write('"' .. v_ .. '" ')
+            end
+            io.stderr:write("\n")
+        else
+            io.stderr:write("    Minimum: " .. v.min .. "\n")
+            io.stderr:write("    Maximum: " .. v.max .. "\n")
+        end
+        io.stderr:write("    Default: " .. v.default .. "\n")
+    end
 end
+
+if #arg < 1 or arg[1] == 'help' or arg[1] == '--help' then
+    if #arg < 2 then
+        io.stderr:write("usage: luasynth unitname [-param val] ...\n")
+        io.stderr:write("for a list of units, run 'luasynth help units'\n")
+    elseif arg[2] == 'units' then
+        io.stderr:write("generators:\n")
+        for k,_ in pairs(gens) do
+            io.stderr:write("  " .. k .. "\n")
+        end
+        io.stderr:write("effects:\n")
+        for k,_ in pairs(effects) do
+            io.stderr:write("  " .. k .. "\n")
+        end
+        io.stderr:write("for info on a unit, run 'luasynth help unitname'\n")
+    else
+        local unitName = arg[2]
+        local unit = gens[unitName] or effects[unitName]
+        if unit then
+            showHelpFor(unit, unitName)
+        else
+            io.stderr:write(unitName .. " is not a unit\n")
+        end
+    end
+    os.exit(1)
+end
+
 
 local isEffect = true
 local unit = effects[arg[1]] and effects[arg[1]].new()
@@ -14,6 +56,7 @@ if not unit then
     end
     isEffect = false
 end
+
 
 local lengthLimitSecs = -1
 
