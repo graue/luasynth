@@ -91,6 +91,19 @@ describe("Knob interface wrapper", function()
     }
     local knobberProto = wrapDefs(knobberDefs)
 
+    it("makes knob info publicly visible in the prototype", function()
+        assert.are.equal(-90,         knobberProto.knobInfo.gain.min)
+        assert.are.equal( 40,         knobberProto.knobInfo.gain.max)
+        assert.are.equal(  3,         knobberProto.knobInfo.gain.default)
+        assert.are.equal('Fake gain', knobberProto.knobInfo.gain.label)
+
+        assert.are.same({'Square', 'Tri', 'Sine'},
+                        knobberProto.knobInfo.oscType.options)
+        assert.are.equal('Fake oscillator type',
+                         knobberProto.knobInfo.oscType.label)
+        assert.are.equal('Sine', knobberProto.knobInfo.oscType.default)
+    end)
+
     it("should set default values for numeric and option knobs", function()
         local unit = knobberProto.new()
         assert.are.equal(3.0, unit.gain)

@@ -62,7 +62,8 @@ function M.wrapMachineDefs(defs)
             min = defs.knobs[k].min,
             max = defs.knobs[k].max,
             default = defs.knobs[k].default,
-            label = defs.knobs[k].label
+            label = defs.knobs[k].label,
+            options = defs.knobs[k].options
         }
     end
 
