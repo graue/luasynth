@@ -37,6 +37,22 @@ local function wrapStereoEffect(stereoFunc)
     end
 end
 
+-- For generators.
+local function wrapMonoGenerator(genFunc)
+    return function(state)
+        return function(numSamples)
+            local i, samples = 1, {}
+            while i <= numSamples do
+                f = genFunc(state)
+                samples[2*i-1] = f
+                samples[2*i]   = f
+                i = i+1
+            end
+            return samples
+        end
+    end
+end
+
 
 function M.wrapMachineDefs(defs)
     -- Copy the knob definitions but without callbacks.
@@ -51,11 +67,13 @@ function M.wrapMachineDefs(defs)
     end
 
     -- Wrap the processing function to operate on a whole array.
-    local wrapProcFunc = nil
+    local wrapProcFunc, wrapGenFunc = nil, nil
     if defs.processOneSample then
         wrapProcFunc = wrapMonoEffect(defs.processOneSample)
     elseif defs.processSamplePair then
         wrapProcFunc = wrapStereoEffect(defs.processSamplePair)
+    elseif defs.generateOneSample then
+        wrapGenFunc = wrapMonoGenerator(defs.generateOneSample)
     else
         error("Unit `" .. defs.name .. "` has no processing function")
     end
@@ -120,7 +138,11 @@ function M.wrapMachineDefs(defs)
 
         -- Expose the wrapped sample-processing function
         -- (enclosing private state).
-        state.public.process = wrapProcFunc(state)
+        if (wrapProcFunc) then
+            state.public.process = wrapProcFunc(state)
+        else
+            state.public.generate = wrapGenFunc(state)
+        end
 
         -- Initialize all knobs, first stealthily (no onChange callbacks).
         for k,v in pairs(proxy.knobInfo) do

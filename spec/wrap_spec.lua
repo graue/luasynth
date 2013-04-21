@@ -24,6 +24,25 @@ describe("Processing function wrapper", function()
         assert.are.same(expected, samples)
     end)
 
+    it("should wrap a mono generator", function()
+        local squareWave = {1, 1, 1,-1,-1,-1}
+        local squareWaverDefs = {
+            name = 'SquareWaver',
+            knobs = {},
+            generateOneSample = function(state)
+                if not state.n then state.n = 0 end
+                state.n = state.n + 1
+                return squareWave[1 + ((state.n-1) % #squareWave)]
+            end
+        }
+        local squareWaverUnit = wrapDefs(squareWaverDefs).new()
+        local samples  = squareWaverUnit.generate(8)
+        local expected = { 1, 1, 1, 1, 1, 1,
+                          -1,-1,-1,-1,-1,-1,
+                           1, 1, 1, 1 }
+        assert.are.same(expected, samples)
+    end)
+
     it("should correctly wrap a stereo effect", function()
         local swapperDefs = {
             name = 'Stereo Swapper',
