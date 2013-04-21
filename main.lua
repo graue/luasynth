@@ -20,11 +20,11 @@ local function showHelpFor(unit, name)
     end
 end
 
-if #arg < 1 or arg[1] == 'help' or arg[1] == '--help' then
-    if #arg < 2 then
+local function showHelp(topic)
+    if not topic then
         io.stderr:write("usage: luasynth unitname [-param val] ...\n")
         io.stderr:write("for a list of units, run 'luasynth help units'\n")
-    elseif arg[2] == 'units' then
+    elseif topic == 'units' then
         io.stderr:write("generators:\n")
         for k,_ in pairs(gens) do
             io.stderr:write("  " .. k .. "\n")
@@ -35,15 +35,19 @@ if #arg < 1 or arg[1] == 'help' or arg[1] == '--help' then
         end
         io.stderr:write("for info on a unit, run 'luasynth help unitname'\n")
     else
-        local unitName = arg[2]
-        local unit = gens[unitName] or effects[unitName]
+        local unit = gens[topic] or effects[topic]
         if unit then
-            showHelpFor(unit, unitName)
+            showHelpFor(unit, topic)
         else
-            io.stderr:write(unitName .. " is not a unit\n")
+            io.stderr:write(topic .. " is not a unit\n")
         end
     end
     os.exit(1)
+end
+
+
+if #arg < 1 or arg[1] == 'help' or arg[1] == '--help' then
+    showHelp(arg[2])
 end
 
 
