@@ -1,15 +1,14 @@
-local effects = {}
-
-effects.amp = require "effects.amp"
-effects.pan = require "effects.pan"
-effects.delay = require "effects.delay"
-effects.power = require "effects.power"
-effects.filter = require "effects.filter"
-effects.softsat = require "effects.softsat"
-effects.stwidth = require "effects.stwidth"
-
-local gens = {}
-
-gens.osc = require "gens.osc"
-
-return {effects = effects, gens = gens}
+return {
+    effects = {
+        amp = require "effects.amp",
+        pan = require "effects.pan",
+        delay = require "effects.delay",
+        power = require "effects.power",
+        filter = require "effects.filter",
+        softsat = require "effects.softsat",
+        stwidth = require "effects.stwidth"
+    },
+    gens = {
+        osc = require "gens.osc"
+    }
+}
