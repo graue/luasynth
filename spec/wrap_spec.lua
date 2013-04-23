@@ -2,7 +2,7 @@ local wrap     = require "util.wrap"
 local wrapDefs = wrap.wrapMachineDefs
 
 describe("Processing function wrapper", function()
-    it("should error if no processing function is provided", function()
+    it("errors if no processing function is provided", function()
         local noProcessingUnit = {
             name = 'Bad Unit',
             knobs = {}
@@ -11,7 +11,7 @@ describe("Processing function wrapper", function()
                          "Unit `Bad Unit` has no processing function")
     end)
 
-    it("should correctly wrap a mono effect", function()
+    it("wraps mono effects", function()
         local inverterDefs = {
             name = 'Inverter',
             knobs = {},
@@ -24,7 +24,7 @@ describe("Processing function wrapper", function()
         assert.are.same(expected, samples)
     end)
 
-    it("should wrap a mono generator", function()
+    it("wraps mono generators", function()
         local squareWave = {1, 1, 1,-1,-1,-1}
         local squareWaverDefs = {
             name = 'SquareWaver',
@@ -43,7 +43,7 @@ describe("Processing function wrapper", function()
         assert.are.same(expected, samples)
     end)
 
-    it("should correctly wrap a stereo effect", function()
+    it("wraps stereo effects", function()
         local swapperDefs = {
             name = 'Stereo Swapper',
             knobs = {},
@@ -104,31 +104,31 @@ describe("Knob interface wrapper", function()
         assert.are.equal('Sine', knobberProto.knobInfo.oscType.default)
     end)
 
-    it("should set default values for numeric and option knobs", function()
+    it("sets default values for numeric and option knobs", function()
         local unit = knobberProto.new()
         assert.are.equal(3.0, unit.gain)
         assert.are.equal('Sine', unit.oscType)
     end)
 
-    it("should call callbacks on init", function()
+    it("calls callbacks on init", function()
         local unit = knobberProto.new()
         assert.spy(gainChange).was.called_with(3.0)
         assert.spy(oscTypeChange).was.called_with('Sine')
     end)
 
-    it("should set all defaults before calling callbacks", function()
+    it("sets all defaults before calling callbacks", function()
         local unit = knobberProto.new()
         assert.spy(checkBothG ).was.called_with(3.0, 'Sine')
         assert.spy(checkBothOT).was.called_with(3.0, 'Sine')
     end)
 
-    it("should update numeric knobs when set", function()
+    it("updates numeric knobs when set", function()
         local unit = knobberProto.new()
         unit.gain = -6.0
         assert.are.equal(-6.0, unit.gain)
     end)
 
-    it("should call callbacks when numeric knobs are set", function()
+    it("calls callbacks when numeric knobs are set", function()
         local unit = knobberProto.new()
         unit.gain = -6.0
         assert.spy(gainChange).was.called_with(-6.0)
@@ -140,7 +140,7 @@ describe("Knob interface wrapper", function()
         assert.spy(checkBothG).was.called_with(-6.0, 'Sine')
     end)
 
-    it("should clamp numeric knobs to within min/max", function()
+    it("clamps numeric knobs to within min/max", function()
         local unit = knobberProto.new()
 
         local tooLow = knobberDefs.knobs.gain.min - 10.0
@@ -154,18 +154,19 @@ describe("Knob interface wrapper", function()
         assert.spy(gainChange).was.called_with(knobberDefs.knobs.gain.max)
     end)
 
-    it("should update option knobs when set", function()
+    it("updates option knobs when set", function()
         local unit = knobberProto.new()
         unit.oscType = 'Tri'
         assert.are.equal('Tri', unit.oscType)
     end)
-    it("should call callbacks when option knobs are set", function()
+
+    it("calls callbacks when option knobs are set", function()
         local unit = knobberProto.new()
         unit.oscType = 'Tri'
         assert.spy(oscTypeChange).was.called_with('Tri')
     end)
 
-    it("should reject option knob settings not in the list", function()
+    it("rejects option knob settings not in the list", function()
         local unit = knobberProto.new()
         assert.has_error(function() unit.oscType = 'Pentagon' end,
                          "Knob `oscType` has no option `Pentagon`")
