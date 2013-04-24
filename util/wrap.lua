@@ -3,6 +3,14 @@
 local M = {}
 
 
+local function findElement(array, el)
+    for i,v in ipairs(array) do
+        if v == el then return i end
+    end
+    return nil
+end
+
+
 -- Wrappers for mono and stereo effects.
 -- We wrap each processing function twice:
 --   1. to process a whole array instead of a single sample / sample pair,
@@ -54,18 +62,24 @@ local function wrapMonoGenerator(genFunc)
 end
 
 
-function M.wrapMachineDefs(defs)
-    -- Copy the knob definitions but without callbacks.
-    local publicKnobInfo = {}
-    for k,v in pairs(defs.knobs) do
-        publicKnobInfo[k] = {
-            min = defs.knobs[k].min,
-            max = defs.knobs[k].max,
-            default = defs.knobs[k].default,
-            label = defs.knobs[k].label,
-            options = defs.knobs[k].options
+local function duplicateKnobInfo(knobs)
+    -- Copy knob definitions but without callbacks.
+    local info = {}
+    for k,v in pairs(knobs) do
+        info[k] = {
+            min     = v.min,
+            max     = v.max,
+            default = v.default,
+            label   = v.label,
+            options = v.options
         }
     end
+    return info
+end
+
+
+function M.wrapMachineDefs(defs)
+    local publicKnobInfo = duplicateKnobInfo(defs.knobs)
 
     -- Wrap the processing function to operate on a whole array.
     local wrapProcFunc, wrapGenFunc = nil, nil
@@ -82,7 +96,8 @@ function M.wrapMachineDefs(defs)
     -- The following function creates a new instance of this machine.
     -- It's called via the prototype's .new() method.
     -- Note that it encloses defs and publicKnobInfo from above.
-    local function newUnit()
+    -- If passed, options is a table containing some initial values.
+    local function newUnit(options)
         local state = {public = {knobInfo = publicKnobInfo}}
 
         local proxy = {}
@@ -104,14 +119,7 @@ function M.wrapMachineDefs(defs)
                 if knobDef.options then
                     -- Multiple choice knob (set of strings).
                     newVal = tostring(newVal)
-                    local found = false
-                    for _,v in ipairs(knobDef.options) do
-                        if v == newVal then
-                            found = true
-                            break
-                        end
-                    end
-                    if not found then
+                    if not findElement(knobDef.options, newVal) then
                         error("Knob `" .. key .. "` has no option `"
                               .. newVal .. "`")
                     end
@@ -127,9 +135,6 @@ function M.wrapMachineDefs(defs)
 
                 state.public[key] = newVal
 
-                -- TODO: Is it worthwhile not calling onChange if the new
-                -- value is the same as the old? Does this ever result in a
-                -- worthwhile performance gain? Complications?
                 if knobDef.onChange then
                     knobDef.onChange(state, newVal)
                 end
@@ -146,11 +151,30 @@ function M.wrapMachineDefs(defs)
         end
 
         -- Initialize all knobs, first stealthily (no onChange callbacks).
+        -- If the knob was included in the `options` argument, that
+        -- overrides the default.
         for k,v in pairs(proxy.knobInfo) do
             if v.min and (v.default < v.min or v.default > v.max) then
-                error("Default for knob " .. k .. " is out of range")
+                error("Default for knob `" .. k .. "` is out of range")
             end
-            state.public[k] = v.default  -- Direct, doesn't call callback
+            if v.options and not findElement(v.options, v.default) then
+                error("Default for knob `" .. k .. "` is not in options list")
+            end
+            local initVal = v.default
+            if options and options[k] then
+                if v.min and options[k] < v.min then
+                    initVal = v.min
+                elseif v.max and options[k] > v.max then
+                    initVal = v.max
+                elseif v.options then
+                    if findElement(v.options, options[k]) then
+                        initVal = options[k]
+                    end
+                else
+                    initVal = options[k]
+                end
+            end
+            state.public[k] = initVal  -- Direct, doesn't call callback
         end
 
         -- Now call each onChange method.
