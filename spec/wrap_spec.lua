@@ -181,4 +181,29 @@ describe("Knob interface wrapper", function()
         assert.are.equal(-20, unit.gain)
         assert.spy(gainChange).was.called_with(-20)
     end)
+
+    it("catches illegal default values for knobs", function()
+        local bogusProto = wrapDefs{
+            name = "Bogus Unit",
+            knobs = {bogusNum = {
+                min = 0, max = 10,
+                default = -2,
+                label = "Bogus numeric knob"
+            }},
+            processSamplePair = function(state, l, r) return l, r end
+        }
+        local secondBogusProto = wrapDefs{
+            name = "Another Bogus Unit",
+            knobs = {bogusOpt = {
+                options = {'Blue', 'Green', 'Red'},
+                default = 'Pink polka dots',
+                label = "Bogus option knob"
+            }},
+            processSamplePair = function(state, l, r) return l, r end
+        }
+        assert.has_error(function() bogusProto.new() end,
+                         "Default for knob `bogusNum` is out of range")
+        assert.has_error(function() secondBogusProto.new() end,
+                         "Default for knob `bogusOpt` is not in options list")
+    end)
 end)
