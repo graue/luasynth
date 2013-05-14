@@ -78,6 +78,8 @@ local function duplicateKnobInfo(knobs)
 end
 
 
+local defaultSampleRate = 44100
+
 function M.wrapMachineDefs(defs)
     local publicKnobInfo = duplicateKnobInfo(defs.knobs)
 
@@ -148,6 +150,17 @@ function M.wrapMachineDefs(defs)
             state.public.process = wrapProcFunc(state)
         else
             state.public.generate = wrapGenFunc(state)
+        end
+
+        state.sampleRate = defaultSampleRate
+        if options and options.sampleRate then
+            local rate = tonumber(options.sampleRate)
+            if not rate then error("Sample rate is not a number") end
+            if rate <= 0 then error("Sample rate must be positive") end
+            if rate ~= math.floor(rate) then
+                error("Sample rate must be a whole number")
+            end
+            state.sampleRate = math.floor(options.sampleRate)
         end
 
         -- Initialize all knobs, first stealthily (no onChange callbacks).

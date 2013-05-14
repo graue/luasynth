@@ -207,3 +207,39 @@ describe("Knob interface wrapper", function()
                          "Default for knob `bogusOpt` is not in options list")
     end)
 end)
+
+
+describe("Sample rate handling in wrapper", function()
+    local newValSpy = spy.new(function(newVal) end)
+    local testUnitProto = wrapDefs{
+        name = 'Inverter',
+        knobs = {testKnob = {
+            min = 0, max = 10,
+            default = 5,
+            label = "Test knob",
+            onChange = function(state, newVal)
+                -- Expose the sample rate that's set internally.
+                state.public._detectedSampleRate = state.sampleRate
+
+                newValSpy(newVal)
+            end
+        }},
+        processOneSample = function(state, sample) return -sample end
+    }
+
+    it("defaults the sample rate to 44100", function()
+        local testUnit = testUnitProto.new()
+        assert.are.equal(44100, testUnit._detectedSampleRate)
+    end)
+
+    it("sets sample rate if you pass a table with 'sampleRate'", function()
+        local testUnit = testUnitProto.new({sampleRate = 48000})
+        assert.are.equal(48000, testUnit._detectedSampleRate)
+    end)
+
+    it("allows mixing 'sample_rate' with actual knob settings", function()
+        local testUnit = testUnitProto.new({sampleRate = 22050, testKnob = 10})
+        assert.are.equal(22050, testUnit._detectedSampleRate)
+        assert.are.equal(10, testUnit.testKnob)
+    end)
+end)
