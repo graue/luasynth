@@ -52,9 +52,10 @@ end
 
 
 local isEffect = true
-local unit = effects[arg[1]] and effects[arg[1]].new()
+local rate = os.getenv('RATE') or 44100
+local unit = effects[arg[1]] and effects[arg[1]].new({sampleRate = rate})
 if not unit then
-    unit = gens[arg[1]] and gens[arg[1]].new()
+    unit = gens[arg[1]] and gens[arg[1]].new({sampleRate = rate})
     if not unit then
         error("No such unit: " .. arg[1])
     end
@@ -100,7 +101,6 @@ end
 
 local samplePair = ffi.new("sample_pair[?]", 1)
 local plainSamples = {}
-local rate = 44100  -- XXX
 local pairsLeft = math.floor(lengthLimitSecs * rate)
 
 while pairsLeft ~= 0 do

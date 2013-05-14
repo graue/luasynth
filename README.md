@@ -50,6 +50,11 @@ decibels, to -6. For a full list of available units, run `./luasynth
 help units`, and for help on an individual one, run `./luasynth help
 <unit name>`.
 
+The sample rate is assumed to be 44100 Hz by default, but can be
+changed by setting the environment variable `RATE`. For example, to
+work at 48KHz, type `export RATE=48000` in the shell followed by
+similar commands to those above.
+
 
 ## Embedding
 
