@@ -22,7 +22,7 @@ end
 
 
 local function updateCoefs(state)
-    local Fs = 44100  -- XXX: need interface to set/get a custom sample rate
+    local Fs = state.sampleRate
     local f0 = state.public.center  -- Cutoff or center frequency
     local Q  = state.public.q
 

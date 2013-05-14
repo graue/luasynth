@@ -4,9 +4,7 @@ local wrap      = require "util.wrap"
 local HistArray = require "util.histArray"
 
 -- Convert a millisecond measurement to a whole number of samples.
-local function msToSamples(ms)
-    local sampleRate = 44100  -- XXX not changeable yet
-
+local function msToSamples(ms, sampleRate)
     local function round(x)
         return math.floor(0.5+x)
     end
@@ -24,7 +22,7 @@ defs.knobs.len = {
     label   = 'Length (ms)',
 
     onChange = function(state, newLen)
-        state.sampleDelay = msToSamples(newLen)
+        state.sampleDelay = msToSamples(newLen, state.sampleRate)
     end
 }
 
@@ -62,7 +60,7 @@ end
 function defs.processSamplePair(state, l, r)
     if not state.n then
         state.n = 0
-        local maxHistory = msToSamples(defs.knobs.len.max)
+        local maxHistory = msToSamples(defs.knobs.len.max, state.sampleRate)
         state.bufL = HistArray.new(maxHistory)
         state.bufR = HistArray.new(maxHistory)
     end

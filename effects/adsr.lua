@@ -8,13 +8,11 @@ end
 
 local defs = {name = 'ADSR', knobs = {}}
 
-local rate = 44100  -- XXX: hardcoded
-
 defs.knobs.attack = {
     min = 0.5, max = 10000.0, default = 10.0,
     label = 'Attack (ms)',
     onChange = function(state, newVal)
-        state.attackSmps = newVal * rate / 1000
+        state.attackSmps = newVal * state.sampleRate / 1000
     end
 }
 
@@ -22,7 +20,7 @@ defs.knobs.decay = {
     min = 0.5, max = 10000.0, default = 1000.0,
     label = 'Decay (ms)',
     onChange = function(state, newVal)
-        state.decaySmps = newVal * rate / 1000
+        state.decaySmps = newVal * state.sampleRate / 1000
     end
 }
 
@@ -38,7 +36,7 @@ defs.knobs.sustainLen = {
     min = 0.5, max = 10000.0, default = 2000.0,
     label = 'Sustain time (ms)',
     onChange = function(state, newVal)
-        state.sustainSmps = newVal * rate / 1000
+        state.sustainSmps = newVal * state.sampleRate / 1000
     end
 }
 
@@ -46,7 +44,7 @@ defs.knobs.release = {
     min = 0.5, max = 10000.0, default = 1000.0,
     label = 'Release (ms)',
     onChange = function(state, newVal)
-        state.releaseSmps = newVal * rate / 1000
+        state.releaseSmps = newVal * state.sampleRate / 1000
     end
 }
 

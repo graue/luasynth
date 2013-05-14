@@ -47,8 +47,6 @@ local funcForOsc = {
     ['Saw Down'] = sawDown
 }
 
-local rate = 44100  -- XXX: not changeable yet
-
 local function dbToRatio(db)
     return 10 ^ (db/20)
 end
@@ -78,7 +76,7 @@ defs.knobs.freq = {
     max      = 22000.0,
     default  =   500.0,
     onChange = function(state, newVal)
-        state.phaseInc = 2 * newVal / rate
+        state.phaseInc = 2 * newVal / state.sampleRate
     end
 }
 
