@@ -68,6 +68,10 @@ run `./luasynth` as above) requires LuaJIT for binary I/O to work.
 However, the audio units themselves will run (albeit slower) in
 regular Lua.
 
+There's no complete documentation of the API yet, sorry, but it's very
+simple, and the tests in `spec/wrap_spec.lua` do describe how most of
+it works.
+
 
 ## Tests
 
