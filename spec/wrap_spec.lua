@@ -210,7 +210,6 @@ end)
 
 
 describe("Sample rate handling in wrapper", function()
-    local newValSpy = spy.new(function(newVal) end)
     local testUnitProto = wrapDefs{
         name = 'Inverter',
         knobs = {testKnob = {
@@ -220,8 +219,6 @@ describe("Sample rate handling in wrapper", function()
             onChange = function(state, newVal)
                 -- Expose the sample rate that's set internally.
                 state.public._detectedSampleRate = state.sampleRate
-
-                newValSpy(newVal)
             end
         }},
         processOneSample = function(state, sample) return -sample end
