@@ -141,7 +141,7 @@ Luasynth](https://github.com/graue/luasynth/blob/master/effects/delay.lua).
 The C version is fragile, contains repetitive boilerplate code and is
 written in terms of memory allocation, pointers and buffers. In
 contrast, the Lua code is simple and elegant, closely resembling a
-mathematical description of what the effect works. It also has the
+mathematical description of what the effect does. It also has the
 potential to one day run in web browsers, using [compilation to
 JavaScript](https://github.com/mherkender/lua.js) and the Web Audio
 API.
