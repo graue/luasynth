@@ -12,10 +12,10 @@ local function initIfNeeded(state)
     -- XXX This is called from updateCoefs(), but should be in a separate
     -- init function once the framework supports that.
     if not state.xLeft then
-        state.xLeft  = HistArray.new(2)
-        state.yLeft  = HistArray.new(2)
-        state.xRight = HistArray.new(2)
-        state.yRight = HistArray.new(2)
+        state.xLeft  = HistArray.new(2, true)
+        state.yLeft  = HistArray.new(2, true)
+        state.xRight = HistArray.new(2, true)
+        state.yRight = HistArray.new(2, true)
         state.n      = 0
     end
 end

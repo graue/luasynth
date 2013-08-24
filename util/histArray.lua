@@ -42,6 +42,16 @@ local function lookupKeyIn(proxy, private, key)
     end
 end
 
+-- A quicker version without the safety checks.
+local function unsafeLookupKeyIn(proxy, private, key)
+    if type(key) == 'number' then
+        return private[computeActualIndexFor(key, private.histSize)]
+    elseif key == 'histSize' then
+        return private.histSize
+    elseif key == 'all' then
+        return private.all
+    end
+end
 
 local function setKeyIn(proxy, private, key, newVal)
     if type(key) ~= 'number' then
@@ -69,7 +79,8 @@ local function setKeyIn(proxy, private, key, newVal)
 end
 
 
-function M.new(histSize)
+-- trustMe is an optional param that if set to true disables bounds checks.
+function M.new(histSize, trustMe)
     if type(histSize) ~= 'number' or math.floor(histSize) ~= histSize then
         error("history size must be an integer")
     end
@@ -77,15 +88,28 @@ function M.new(histSize)
 
     local private = {}
     local proxy = {}
-    local meta = {
-        __index = function(proxy, key)
-            return lookupKeyIn(proxy, private, key)
-        end,
+    local meta
+    if trustMe then
+        meta = {
+            __index = function(proxy, key)
+                return unsafeLookupKeyIn(proxy, private, key)
+            end,
 
-        __newindex = function(proxy, key, newVal)
-            setKeyIn(proxy, private, key, newVal)
-        end
-    }
+            __newindex = function(proxy, key, newVal)
+                setKeyIn(proxy, private, key, newVal)
+            end
+        }
+    else
+        meta = {
+            __index = function(proxy, key)
+                return lookupKeyIn(proxy, private, key)
+            end,
+
+            __newindex = function(proxy, key, newVal)
+                setKeyIn(proxy, private, key, newVal)
+            end
+        }
+    end
     setmetatable(proxy, meta)
 
     private.histSize = histSize
